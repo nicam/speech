@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      if (('webkitSpeechRecognition' in window)) {
+        var recognition = new webkitSpeechRecognition();
+        recognition.continuous = true;
+        // recognition.interimResults = true;
+        var running = false;
+        recognition.lang = "en-GB";
+
+        var runner = false;
+        var sentence = '';
+
+
+        recognition.onaudiostart = function (event) { console.log('onaudiostart', event)};
+        recognition.onsoundstart = function (event) { console.log('onsoundstart', event)};
+        recognition.onspeechstart = function (event) {
+          if (runner) {
+            clearInterval(runner);
+          }
+          runner = setTimeout(reset, 2000);
+        };
+        recognition.onspeechend = function (event) { console.log('onspeechend', event)};
+        recognition.onsoundend = function (event) { console.log('onsoundend', event)};
+        recognition.onaudioend = function (event) { console.log('onaudioend', event)};
+        recognition.onnomatch = function (event) { console.log('onnomatch', event)};
+        recognition.onerror = function (event) { console.log('onerror', event)};
+        recognition.onstart = function (event) { 
+          running = true;
+        };
+        recognition.onend = function (event) { console.log('onend', event)};
+        recognition.onerror = function(event) { console.log('error', event)};
+
+        var socket = io();
+        socket.on('response', function(text) {
+
+          console.log('received response ' + text);
+          say(text);
+
+        });
+
+        function say(text) {
+          var newUtt = new SpeechSynthesisUtterance(text);
+          newUtt.addEventListener('start', function () {
+            console.log('start speaking');
+             stop();
+          })
+          newUtt.addEventListener('end', function () {
+            console.log('end speaking');
+            start();
+          })
+          // setTimeout(function () {
+          speak(newUtt);
+          // }, 100);
+        }
+
+        function start() {
+          if (!running) {
+            running = true;
+           recognition.start();
+          }
+        }
+
+        function stop() {
+          if (running) {
+            running = false;
+            recognition.stop();
+          }
+        }
+
+        function speak(newUtt) {
+          window.speechSynthesis.speak(newUtt);
+        }
+
+        function doSomething(text) {
+          if (text.toLowerCase().indexOf("time") > -1) {
+            var time = new Date();
+            return say(time.getHours() + ":" + time.getMinutes());
+          }
+          if (text.toLowerCase().indexOf("joke") > -1) {
+            return say("Did you hear about the giant with diarrhea? \n It's all over town.");
+          }
+          if (text.length > 0) {
+            socket.emit('message', text);
+          }
+          sentence = '';
+          return text;
+        }
+
+        recognition.onend = function(event) {
+          console.log('onend', event);
+          doSomething(sentence);
+          sentence = '';
+          reset();
+        };
+
+        recognition.onresult = function(event) {
+          // console.log(event.results[0][0].transcript, event.results[0][0].confidence);
+          document.getElementById('output').innerHTML = event.results[0][0].transcript;
+          sentence = event.results[0][0].transcript;
+        };
+
+        function reset () {
+          if (running) {
+            stop();
+            start();
+          }
+        }
+      }
+    </script>
+    <input type="button" onclick="start()" value="On">
+    <input type="button" onclick="stop()" value="Off">
+    <h1>Say something</h1>
+    <ul>
+      <li>What is the time?</li>
+      <li>Tell me a joke</li>
+      <li>The rest goes to wolfram alpha</li>
+    </ul>
+    <h1 id="output"></h1>
+  </body>
+</html>

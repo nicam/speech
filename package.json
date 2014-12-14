@@ -1,0 +1,11 @@
+{
+  "name": "jarvis",
+  "description": "Easy backup solution with nfs, wol and rsync",
+  "author": "Pascal Helfenstein <nicam@nicam.ch>",
+  "dependencies": {
+    "express": "^4.10.2",
+    "socket.io": "^1.2.1"
+  },
+  "engine": "node >= 0.4.1",
+  "devDependencies": {}
+}
