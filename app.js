@@ -1,21 +1,23 @@
 
 
 var wolfram = require('wolfram').createClient("8U7YVL-3364E95GXU")
-var app = require('express')();
+var express = require('express');
+var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
+
 app.get('/', function(req, res){
+  // console.log(req);
   res.sendFile(__dirname + '/index.html');
 });
+
+app.use("/images", express.static(__dirname + '/images'));
 
 http.listen(3000, function(){
   console.log('listening on *:3000');
 });
 
-app.get('/', function(req, res){
-  res.sendFile(__dirname + '/index.html');
-});
 
 app.get('/wolfram', function(req, res){
   // res.send('blub');
@@ -27,7 +29,7 @@ app.get('/wolfram', function(req, res){
       //   print(val + ' -> ' + obj[val]);
       // });
       result.forEach(function(value, key) {
-        console.log(value);
+        // console.log(value);
         if (value.title == 'Basic information') {
           console.log(value['subpods'].value);
           res.send(value['subpods'].value);
@@ -44,13 +46,33 @@ function askWolfram(query, callback) {
   wolfram.query(query, callback);
 }
 
+var unitReplacements = {
+  "km": "(kilometers)",
+  "CHF": "(Swiss francs)",
+  "m^3": "(cubic meters)",
+}
+
+function responseText(text) {
+
+  Object.getOwnPropertyNames(unitReplacements).forEach(function(val, idx, array) {
+    if (text.indexOf(val) > -1 && text.indexOf(unitReplacements[val])) {
+      text = text.replace(unitReplacements[val], '');
+    }
+  });
+ 
+  return text;
+}
+
 io.on('connection', function(socket){
-  console.log('connection');
+  // console.log('connection');
   socket.on('message', function(msg) {
-    console.log('received message ' + msg);
+    // console.log('received message ' + msg);
     if (msg) {
       askWolfram(msg, function(err, result) {
-        console.log(result);
+        // console.log(result);
+        if (result.length === 0) {
+          socket.emit('response', "I couldn't find an answer for that.");
+        }
         // console.log(result[1]['subpods'][0].value)
         // if (result.length > 0 && result[0]) {
         //   result[0].forEach(function(value, key) {
@@ -61,8 +83,14 @@ io.on('connection', function(socket){
         //   });
         // }
         if (result && result[1] && result[1]['subpods'] && result[1]['subpods'][0]) {
-          console.log('responsed message', result[1]['subpods'][0].value);
-          socket.emit('response', result[1]['subpods'][0].value);
+          
+          if (result[1]['subpods'][0].value.trim().length === 0) {
+            socket.emit('response', "I couldn't find an answer for that.");
+          } else {
+            socket.emit('response', responseText(result[1]['subpods'][0].value));
+          }
+
+
         }
       });
     }

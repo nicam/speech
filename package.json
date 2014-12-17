@@ -4,7 +4,8 @@
   "author": "Pascal Helfenstein <nicam@nicam.ch>",
   "dependencies": {
     "express": "^4.10.2",
-    "socket.io": "^1.2.1"
+    "socket.io": "^1.2.1",
+    "wolfram": "^0.3.0"
   },
   "engine": "node >= 0.4.1",
   "devDependencies": {}
