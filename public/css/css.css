@@ -20,7 +20,7 @@ h1 {
   color: #111;
   padding: 20px;
   position: absolute;
-  bottom: 0;
+  bottom: 35px;
   left: 50%;
   margin-left: -200px;
   box-sizing: border-box;
