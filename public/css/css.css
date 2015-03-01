@@ -9,6 +9,40 @@ body {
 h1 {
   /*color:#7f8c8d;*/
 }
+.debug {
+  width: 400px;
+  text-align: left;
+  overflow: auto;
+  margin: 0 auto;
+  background: white;
+  color: #111;
+  padding: 20px;
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  margin-left: -200px;
+  box-sizing: border-box;
+}
+
+.hidden {
+  display: none !important;
+}
+
+input[type="range"], select {
+  width: 150px;
+  float: right;
+  margin-bottom: 10px;
+  clear: right;
+}
+
+label {
+  display: inline-block;
+  float: left;
+  width: 150px;
+  margin-bottom: 10px;
+  clear: left;
+}
+
 .loader {
   margin: 2em auto;
   font-size: 10px;
@@ -39,7 +73,8 @@ h1 {
 }
 
 .loader-container {
-  height: 140px;
+  height: 150px;
+  overflow: hidden;
 }
 
 .loader-speak {

@@ -9,10 +9,10 @@ if (('webkitSpeechRecognition' in window)) {
   var sentence = '';
   var isProcessing = false;
   var speeches = [];
+  var voiceSelect = document.getElementById('voice');
 
   var socket = io();
   socket.on('response', function(text) {
-    console.log('received response ' + text);
     isProcessing = false;
     sayAndShow(text);
   });
@@ -36,7 +36,6 @@ if (('webkitSpeechRecognition' in window)) {
   };
 
   function doneSpeaking() {
-    console.log('end speaking');
     if (speeches.pop() && speeches.length === 0) {
       startRecognizing();
     }
@@ -53,11 +52,24 @@ if (('webkitSpeechRecognition' in window)) {
     speaking();
     var newUtt = new SpeechSynthesisUtterance(text);
 
-    speechUtteranceChunker(newUtt, { chunkLength: 120
-    }, doneSpeaking);
+    if (voiceSelect.value) {
+      newUtt.voice = speechSynthesis.getVoices().filter(function(voice) { return voice.name == voiceSelect.value; })[0];
+    } else {
+      newUtt.voice = 'Google US English';
+    }
 
+    newUtt.volume = parseFloat(document.getElementById('volume').value);
+    newUtt.rate = parseFloat(document.getElementById('rate').value);
+    newUtt.pitch = parseFloat(document.getElementById('pitch').value);
+
+    if (text.length < 120) {
+      newUtt.addEventListener('end', doneSpeaking);
+      speechSynthesis.speak(newUtt);
+    } else {
+      //https://gist.github.com/woollsta/2d146f13878a301b36d7
+      speechUtteranceChunker(newUtt, { chunkLength: 120 }, doneSpeaking);
+    }
     newUtt.addEventListener('start', function () {
-      console.log('start speaking');
        stopRecognizing();
     })
   }
@@ -129,6 +141,30 @@ if (('webkitSpeechRecognition' in window)) {
     }
   }
 
+  function loadVoices() {
+    // Fetch the available voices.
+    var voices = speechSynthesis.getVoices();
+    var startVoice = 0;
+    voiceSelect = document.getElementById('voice');
+    // Loop through each of the voices.
+    voices.forEach(function(voice, i) {
+      // Create a new option element.
+      var option = document.createElement('option');
+      
+      // Set the options value and text.
+      option.value = voice.name;
+      option.innerHTML = voice.name;
+
+        
+      // Add the option to the voice selector.
+      voiceSelect.appendChild(option);
+      if (voice.name === 'Google US English') {
+        startVoice = i+1;
+      }
+    });
+    voiceSelect.selectedIndex = startVoice;
+  }
+
   function processing() {
     isProcessing = true;
     document.getElementById('response').innerHTML = '';
@@ -145,7 +181,21 @@ if (('webkitSpeechRecognition' in window)) {
 
   document.addEventListener("DOMContentLoaded", function(event) { 
     startRecognizing();
+    voiceSelect = document.getElementById('voice');
+    loadVoices();
+    document.getElementById('loading').onclick = function () {
+      var debug = document.getElementById('debug');
+      if (debug.classList.contains('hidden')) {
+        debug.classList.remove('hidden');
+      } else {
+        debug.classList.add('hidden');
+      }
+    }
   });
+
+  window.speechSynthesis.onvoiceschanged = function(e) {
+    loadVoices();
+  };
 
   recognition.onaudiostart = function (event) { console.log('onaudiostart', event)};
   recognition.onsoundstart = function (event) { console.log('onsoundstart', event)};

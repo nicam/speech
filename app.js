@@ -31,7 +31,7 @@ function askWolfram(query, callback) {
 
 function parseWolfram(socket) {
   return function (err, result) {
-    if (result.length === 0) {
+    if (!result || result.length === 0) {
       socket.emit('response', "I couldn't find an answer for that.");
     }
     if (result && result[1] && result[1]['subpods'] && result[1]['subpods'][0]) {
