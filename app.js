@@ -2,13 +2,13 @@ var wolfram = require('wolfram').createClient("8U7YVL-3364E95GXU")
 var express = require('express');
 var fs = require('fs');
 var app = express();
-var privateKey  = fs.readFileSync('nicam.key', 'utf8');
-var certificate = fs.readFileSync('nicam.cert', 'utf8');
 var giphy = require( 'giphy' )( 'dc6zaTOxFJmzC' );
 var giphyResults = 20;
 var protocol;
 
 if (process.env.NODE_ENV === 'local') {
+  var privateKey  = fs.readFileSync('nicam.key', 'utf8');
+  var certificate = fs.readFileSync('nicam.cert', 'utf8');
   var credentials = {key: privateKey, cert: certificate};
   protocol = require('https').Server(credentials, app);
 } else {
