@@ -5,27 +5,25 @@ var app = express();
 var privateKey  = fs.readFileSync('nicam.key', 'utf8');
 var certificate = fs.readFileSync('nicam.cert', 'utf8');
 var giphy = require( 'giphy' )( 'dc6zaTOxFJmzC' );
-
-var credentials = {key: privateKey, cert: certificate};
-var http = require('http').Server(app);
-var https = require('https').Server(credentials, app);
-var io = require('socket.io')(https);
-
 var giphyResults = 20;
-
-app.set('port', (process.env.PORT || 5000));
-
-app.use("/", express.static(__dirname + '/'));
+var protocol;
 
 if (process.env.NODE_ENV === 'local') {
-  https.listen(app.get('port'), function() {
-    console.log('listening on *:'+ app.get('port'));
-  });
+  var credentials = {key: privateKey, cert: certificate};
+  protocol = require('https').Server(credentials, app);
 } else {
-  http.listen(app.get('port'), function() {
-    console.log('listening on *:'+ app.get('port'));
-  });
+  protocol = require('http').Server(app);
 }
+
+var io = require('socket.io')(protocol);
+
+app.set('port', (process.env.PORT || 5000));
+app.use("/", express.static(__dirname + '/'));
+
+protocol.listen(app.get('port'), function() {
+  console.log('listening on *:'+ app.get('port'));
+});
+
 
 function askWolfram(query, callback) {
   wolfram.query(query, callback);
