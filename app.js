@@ -13,10 +13,9 @@ app.get('/', function(req, res){
 
 app.use("/images", express.static(__dirname + '/images'));
 
-app.listen(app.get('port'), function() {
-  console.log("Node app is running at localhost:" + app.get('port'));
+http.listen(app.get('port'), function() {
+  console.log('listening on *:'+app.get('port'));
 });
-
 
 app.get('/wolfram', function(req, res){
   // res.send('blub');
