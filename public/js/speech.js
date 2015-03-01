@@ -14,8 +14,7 @@ if (('webkitSpeechRecognition' in window)) {
   socket.on('response', function(text) {
     console.log('received response ' + text);
     isProcessing = false;
-    say(text);
-    show(text);
+    sayAndShow(text);
   });
 
   socket.on('gif', function(id) {
@@ -67,6 +66,11 @@ if (('webkitSpeechRecognition' in window)) {
     document.getElementById('response').innerHTML = string;
   }
 
+  function sayAndShow(string) {
+    say(string);
+    show(string);
+  }
+
   function startRecognizing() {
     if (!running) {
       running = true;
@@ -86,10 +90,13 @@ if (('webkitSpeechRecognition' in window)) {
   function doSomething(text) {
     if (text.toLowerCase().indexOf("time") > -1) {
       var time = new Date();
-      return say("It is " + time.getHours() + ":" + time.getMinutes());
+      return sayAndShow("It is " + time.getHours() + ":" + time.getMinutes());
     }
     if (text.toLowerCase().indexOf("joke") > -1) {
-      return say("Did you hear about the giant with diarrhea? \n It's all over town.");
+      return sayAndShow("Did you hear about the giant with diarrhea? \n It's all over town.");
+    }
+    if (text.toLowerCase().indexOf("say") > -1) {
+      return sayAndShow(text.replace('say','').trim());
     }
     if (text.length > 0) {
       // say('Let me think about that for a second');
