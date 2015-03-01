@@ -18,7 +18,7 @@ if (process.env.NODE_ENV === 'local') {
 var io = require('socket.io')(protocol);
 
 app.set('port', (process.env.PORT || 5000));
-app.use("/", express.static(__dirname + '/'));
+app.use("/", express.static(__dirname + '/public/'));
 
 protocol.listen(app.get('port'), function() {
   console.log('listening on *:'+ app.get('port'));
