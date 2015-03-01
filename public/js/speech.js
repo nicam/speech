@@ -54,8 +54,6 @@ if (('webkitSpeechRecognition' in window)) {
 
     if (voiceSelect.value) {
       newUtt.voice = speechSynthesis.getVoices().filter(function(voice) { return voice.name == voiceSelect.value; })[0];
-    } else {
-      newUtt.voice = 'Google US English';
     }
 
     newUtt.volume = parseFloat(document.getElementById('volume').value);
@@ -144,7 +142,6 @@ if (('webkitSpeechRecognition' in window)) {
   function loadVoices() {
     // Fetch the available voices.
     var voices = speechSynthesis.getVoices();
-    var startVoice = 0;
     voiceSelect = document.getElementById('voice');
     // Loop through each of the voices.
     voices.forEach(function(voice, i) {
@@ -158,11 +155,7 @@ if (('webkitSpeechRecognition' in window)) {
         
       // Add the option to the voice selector.
       voiceSelect.appendChild(option);
-      if (voice.name === 'Google US English') {
-        startVoice = i+1;
-      }
     });
-    voiceSelect.selectedIndex = startVoice;
   }
 
   function processing() {
