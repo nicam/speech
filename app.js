@@ -1,8 +1,11 @@
-var wolfram = require('wolfram').createClient("8U7YVL-3364E95GXU")
-var express = require('express');
+"use strict";
+
+var wolfram = require('wolfram').createClient("8U7YVL-3364E95GXU");
+var giphy = require('giphy')('dc6zaTOxFJmzC');
 var fs = require('fs');
+
+var express = require('express');
 var app = express();
-var giphy = require( 'giphy' )( 'dc6zaTOxFJmzC' );
 var giphyResults = 20;
 var protocol;
 
@@ -24,9 +27,23 @@ protocol.listen(app.get('port'), function() {
   console.log('listening on *:'+ app.get('port'));
 });
 
+io.on('connection', function(socket) {
+  socket.on('message', function(string) {
+    var giphyCheck = /show me (a |an )?.*/i;
+    var giphyRep = /show me (a |an )?/i;
+    if (giphyCheck.test(string)) {
+      giphy.search({q: string.replace(giphyRep.exec(string)[0], '').trim(),limit: giphyResults}, parseGiphy(socket));
+    } else {
+      wolfram.query(string, parseWolfram(socket));
+    }
+  });
+});
 
-function askWolfram(query, callback) {
-  wolfram.query(query, callback);
+function parseGiphy(socket) {
+  return function (err, results) {
+    var idx = Math.floor((Math.random() * results.data.length) + 1)-1;
+    socket.emit('gif', results.data[idx].id);
+  };
 }
 
 function parseWolfram(socket) {
@@ -34,31 +51,18 @@ function parseWolfram(socket) {
     if (!result || result.length === 0) {
       socket.emit('response', "I couldn't find an answer for that.");
     }
-    if (result && result[1] && result[1]['subpods'] && result[1]['subpods'][0]) {
-      if (result[1]['subpods'][0].value.trim().length === 0) {
+    if (result && result[1] && result[1].subpods && result[1].subpods[0]) {
+      if (result[1].subpods[0].value.trim().length === 0) {
         socket.emit('response', "I couldn't find an answer for that.");
       } else {
-        socket.emit('response', responseText(result[1]['subpods'][0].value));
+        socket.emit('response', responseText(result[1].subpods[0].value));
       }
     }
-  }
-}
-
-function parseGiphy(socket) {
-  return function (err, results, res) {
-    var idx = Math.floor((Math.random() * results.data.length) + 1);
-    socket.emit('gif', results.data[idx].id);
-  }
-}
-
-var unitReplacements = {
-  "km": "(kilometers)",
-  "CHF": "(Swiss francs)",
-  "m^3": "(cubic meters)",
+  };
 }
 
 function responseText(text) {
-  Object.getOwnPropertyNames(unitReplacements).forEach(function(val, idx, array) {
+  Object.getOwnPropertyNames(unitReplacements).forEach(function(val) {
     if (text.indexOf(val) > -1 && text.indexOf(unitReplacements[val])) {
       text = text.replace(unitReplacements[val], '');
     }
@@ -66,14 +70,8 @@ function responseText(text) {
   return text;
 }
 
-io.on('connection', function(socket) {
-  socket.on('message', function(msg) {
-    var giphyCheck = /show me (a |an )?.*/i
-    var giphyRep = /show me (a |an )?/i
-    if (giphyCheck.test(msg)) {
-      giphy.search({q: msg.replace(giphyRep.exec(msg)[0], '').trim(),limit: giphyResults}, parseGiphy(socket));
-    } else {
-      askWolfram(msg, parseWolfram(socket));
-    }
-  });
-});
+var unitReplacements = {
+  "km": "(kilometers)",
+  "CHF": "(Swiss francs)",
+  "m^3": "(cubic meters)",
+};

@@ -1,41 +1,65 @@
-if (('webkitSpeechRecognition' in window)) {
-  var recognition = new webkitSpeechRecognition();
-  recognition.continuous = true;
-  // recognition.interimResults = true;
+"use strict";
+(function () {
+  var recognition, socket;
   var running = false;
-  recognition.lang = "en-US";
-
   var runner = false;
   var sentence = '';
   var isProcessing = false;
   var speeches = [];
   var voiceSelect = document.getElementById('voice');
 
-  var socket = io();
-  socket.on('response', function(text) {
+  var init = function () {
+    socket = io();
+    recognition = new webkitSpeechRecognition();
+    recognition.continuous = true;
+    recognition.lang = "en-US";
+
+    bind();
+    startRecognizing();
+    loadVoices();
+  };
+
+  var bind = function () {
+    socket.on('response', wolframResponse);
+    socket.on('gif', giphyResponse);
+    document.getElementById('loading').addEventListener('click', toggleDebug);
+
+    recognition.addEventListener('start', function () {
+      running = true;
+    });
+
+    recognition.addEventListener('speechstart', function () {
+      if (runner) {
+        clearInterval(runner);
+      }
+      runner = setTimeout(reset, 2000);
+    });
+
+    recognition.addEventListener('end', function() {
+      doSomething(sentence);
+      sentence = '';
+      reset();
+    });
+
+    recognition.addEventListener('result', function(event) {
+      document.getElementById('output').innerHTML = event.results[0][0].transcript;
+      sentence = event.results[0][0].transcript;
+    });
+
+  };
+
+  var wolframResponse = function (text) {
     isProcessing = false;
     sayAndShow(text);
-  });
+  };
 
-  socket.on('gif', function(id) {
+  var giphyResponse = function (id) {
     isProcessing = false;
     say('here you go');
-    // show('<img src="'+url+'">');
     show('<video id="gif-mp4" poster="https://media.giphy.com/media/'+id+'/200_s.gif" style="margin:0;padding:0" width="380" height="213" autoplay="" loop=""><source src="http://media.giphy.com/media/'+id+'/giphy.mp4" type="video/mp4">Your browser does not support the mp4 video codec.</video>');
-  });
-
-  recognition.onstart = function (event) {
-    running = true;
   };
 
-  recognition.onspeechstart = function (event) {
-    if (runner) {
-      clearInterval(runner);
-    }
-    runner = setTimeout(reset, 2000);
-  };
-
-  function doneSpeaking() {
+  var doneSpeaking = function () {
     if (speeches.pop() && speeches.length === 0) {
       startRecognizing();
     }
@@ -44,16 +68,17 @@ if (('webkitSpeechRecognition' in window)) {
     } else {
       waiting();
     }
-  }
+  };
 
-  function say(text) {
+  var say = function(text) {
     stopRecognizing();
     speeches.push(1);
     speaking();
     var newUtt = new SpeechSynthesisUtterance(text);
 
     if (voiceSelect.value) {
-      newUtt.voice = speechSynthesis.getVoices().filter(function(voice) { return voice.name == voiceSelect.value; })[0];
+      newUtt.voice = speechSynthesis.getVoices().filter(function(voice) {
+        return voice.name === voiceSelect.value; })[0];
     }
 
     newUtt.volume = parseFloat(document.getElementById('volume').value);
@@ -69,35 +94,35 @@ if (('webkitSpeechRecognition' in window)) {
     }
     newUtt.addEventListener('start', function () {
        stopRecognizing();
-    })
-  }
+    });
+  };
 
-  function show(string) {
+  var show = function(string) {
     document.getElementById('response').innerHTML = string;
-  }
+  };
 
-  function sayAndShow(string) {
+  var sayAndShow = function(string) {
     say(string);
     show(string);
-  }
+  };
 
-  function startRecognizing() {
+  var startRecognizing = function() {
     if (!running) {
       running = true;
       try {
         recognition.start();
       } catch (e) {}
     }
-  }
+  };
 
-  function stopRecognizing() {
+  var stopRecognizing = function() {
     if (running) {
       running = false;
       recognition.stop();
     }
-  }
+  };
 
-  function doSomething(text) {
+  var doSomething = function(text) {
     if (text.toLowerCase().indexOf("time") > -1) {
       var time = new Date();
       return sayAndShow("It is " + time.getHours() + ":" + time.getMinutes());
@@ -115,88 +140,77 @@ if (('webkitSpeechRecognition' in window)) {
     }
     sentence = '';
     return text;
-  }
-
-  recognition.onend = function(event) {
-    console.log('onend', event);
-    doSomething(sentence);
-    sentence = '';
-    reset();
   };
 
-  recognition.onresult = function(event) {
-    // console.log(event.results[0][0].transcript, event.results[0][0].confidence);
-    document.getElementById('output').innerHTML = event.results[0][0].transcript;
-    sentence = event.results[0][0].transcript;
-  };
-
-  function reset () {
+  var reset = function() {
     if (running) {
       if (speeches.length === 0) {
         stopRecognizing();
         startRecognizing();
       }
     }
-  }
+  };
 
-  function loadVoices() {
+  var toggleDebug = function () {
+    var debug = document.getElementById('debug');
+    if (debug.classList.contains('hidden')) {
+      debug.classList.remove('hidden');
+    } else {
+      debug.classList.add('hidden');
+    }
+  };
+
+  var loadVoices = function() {
     // Fetch the available voices.
     var voices = speechSynthesis.getVoices();
     voiceSelect = document.getElementById('voice');
     // Loop through each of the voices.
-    voices.forEach(function(voice, i) {
+    voices.forEach(function(voice) {
       // Create a new option element.
       var option = document.createElement('option');
       
       // Set the options value and text.
       option.value = voice.name;
       option.innerHTML = voice.name;
-
         
       // Add the option to the voice selector.
       voiceSelect.appendChild(option);
     });
-  }
+  };
 
-  function processing() {
+  var processing = function() {
     isProcessing = true;
     document.getElementById('response').innerHTML = '';
     document.getElementById('loading').className = "loader";
-  }
+  };
 
-  function waiting() {
+  var waiting = function() {
     document.getElementById('loading').className = "loader-wait";
-  }
+  };
 
-  function speaking() {
+  var speaking = function() {
     document.getElementById('loading').className = "loader-speak";
-  }
+  };
 
-  document.addEventListener("DOMContentLoaded", function(event) { 
-    startRecognizing();
-    voiceSelect = document.getElementById('voice');
-    loadVoices();
-    document.getElementById('loading').onclick = function () {
-      var debug = document.getElementById('debug');
-      if (debug.classList.contains('hidden')) {
-        debug.classList.remove('hidden');
-      } else {
-        debug.classList.add('hidden');
-      }
+  document.addEventListener("DOMContentLoaded", function() {
+    if (('webkitSpeechRecognition' in window && 'speechSynthesis' in window)) {
+      init();
+    } else {
+      document.getElementById('output').innerHTML = 'Sorry your browser is missing the Speech APIs. Try Chrome.';
     }
   });
 
-  window.speechSynthesis.onvoiceschanged = function(e) {
+  window.speechSynthesis.onvoiceschanged = function() {
     loadVoices();
   };
 
-  recognition.onaudiostart = function (event) { console.log('onaudiostart', event)};
-  recognition.onsoundstart = function (event) { console.log('onsoundstart', event)};
-  recognition.onspeechend = function (event) { console.log('onspeechend', event)};
-  recognition.onsoundend = function (event) { console.log('onsoundend', event)};
-  recognition.onaudioend = function (event) { console.log('onaudioend', event)};
-  recognition.onnomatch = function (event) { console.log('onnomatch', event)};
-  // recognition.onend = function (event) { console.log('onend', event)};
-  recognition.onerror = function(event) { console.log('error', event)};
+  // recognition.onaudiostart = function (event) { console.log('onaudiostart', event)};
+  // recognition.onsoundstart = function (event) { console.log('onsoundstart', event)};
+  // recognition.onspeechend = function (event) { console.log('onspeechend', event)};
+  // recognition.onsoundend = function (event) { console.log('onsoundend', event)};
+  // recognition.onaudioend = function (event) { console.log('onaudioend', event)};
+  // recognition.onnomatch = function (event) { console.log('onnomatch', event)};
+  // // recognition.onend = function (event) { console.log('onend', event)};
+  // recognition.onerror = function(event) { console.log('error', event)};
 
-}
+})();

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Speech demo</title>
+    <title>WebSpeech demo</title>
     <meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0;">
     <link rel="stylesheet" type="text/css" href="css/css.css" />
   </head>
@@ -9,15 +9,11 @@
     <script src="/socket.io/socket.io.js"></script>
     <script src="/js/chunkify.js"></script>
     <script src="/js/speech.js"></script>
-<!--     <input type="button" onclick="start()" value="On">
-    <input type="button" onclick="stop()" value="Off"> -->
     <div class="loader-container">
-      
-    <div id="loading" class="loader-wait">Loading...</div>
+      <div id="loading" class="loader-wait">Loading...</div>
     </div>
     <h1 id="output">Say something</h1>
     <h2 id="response"></h1>
-
 
     <div id="debug" class="debug hidden">
       <div class="option">
@@ -36,6 +32,10 @@
         <label for="pitch">Pitch</label>
         <input type="range" min="0" max="2" step="0.1" name="pitch" id="pitch" value="1">
       </div>
+    </div>
+
+    <div class="footer">
+      An interactive Siri clone using Web Technologies. Brought to you by <a href="http://www.twitter.com/nicam" target="_blank">@nicam</a>.
     </div>
   </body>
 </html>
