@@ -12,7 +12,7 @@
     "url": "https://github.com/nicam/speech.git"
   },
   "scripts": {
-    "start": "node index.js"
+    "start": "node app.js"
   },
   "engine": "node >= 0.10.x",
   "devDependencies": {}
