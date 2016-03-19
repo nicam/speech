@@ -3,6 +3,8 @@
 var wolfram = require('wolfram').createClient("8U7YVL-3364E95GXU");
 var giphy = require('giphy')('dc6zaTOxFJmzC');
 var fs = require('fs');
+var http = require('http');
+var wit = require('./wit');
 
 var express = require('express');
 var app = express();
@@ -28,16 +30,23 @@ protocol.listen(app.get('port'), function() {
 });
 
 io.on('connection', function(socket) {
-  socket.on('message', function(string) {
+  socket.on('message', handleIncomingRequest(socket));
+});
+
+function handleIncomingRequest (socket) {
+  return (string) => {
     var giphyCheck = /show me (a |an )?.*/i;
+    var witCheck = /(tell|turn|isaac|isac|want|resume|stop|switch)/i;
     var giphyRep = /show me (a |an )?/i;
     if (giphyCheck.test(string)) {
       giphy.search({q: string.replace(giphyRep.exec(string)[0], '').trim(),limit: giphyResults}, parseGiphy(socket));
+    } else if (witCheck.test(string)) {
+      wit.analyzeWithWith(socket, string);
     } else {
       wolfram.query(string, parseWolfram(socket));
     }
-  });
-});
+  }
+}
 
 function parseGiphy(socket) {
   return function (err, results) {
