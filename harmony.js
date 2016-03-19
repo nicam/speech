@@ -1,6 +1,6 @@
 var harmony = require('harmonyhubjs-client');
 
-function executeHarmonyAction(socket, intent) {
+function executeAction(socket, intent) {
   harmony('192.168.10.102').then(function(harmonyClient) {
     if (intent.toggle === "off") {
       harmonyClient.turnOff()
@@ -8,13 +8,11 @@ function executeHarmonyAction(socket, intent) {
       socket.emit("response", "I turned it off");
     } else {
       harmonyClient.getActivities().then(function(activities) {
-        console.log(activities.map(activity => activity.label));
         var mappedActivity = mapActivities(intent.target)
         if (!mappedActivity) {
           socket.emit("response", "I couldn't find an activity for that");
         } else {
           activities.some(activity => {
-            console.log(activity.label, mappedActivity)
             if (activity.label === mappedActivity) {
               harmonyClient.startActivity(activity.id);
               socket.emit("response", "I started the " + mappedActivity);
@@ -45,4 +43,4 @@ function mapActivities(target) {
   }
 }
 
-module.exports.executeHarmonyAction = executeHarmonyAction;
+module.exports.executeAction = executeAction;
