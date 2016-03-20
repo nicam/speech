@@ -122,10 +122,26 @@
     }
   };
 
+  var toggleSurveillance = function () {
+    var container = document.getElementById("surveillance");
+    if (container.classList.contains('hidden')) {
+      document.getElementById('surveilance-iframe').src = 'http://192.168.10.4:8084/video/livesp.asp';
+      document.getElementById("surveillance").classList.remove('hidden');
+      return sayAndShow("surveillance activated");
+    } else {
+      document.getElementById("surveillance").classList.add('hidden');
+      document.getElementById('surveilance-iframe').src = '';
+      return sayAndShow("surveillance deactivated");
+    }
+  }
+
   var doSomething = function(text) {
     if (text.toLowerCase().indexOf("time") > -1) {
       var time = new Date();
       return sayAndShow("It is " + time.getHours() + ":" + time.getMinutes());
+    }
+    if (text.toLowerCase().indexOf("surveillance") > -1) {
+      return toggleSurveillance();
     }
     if (text.toLowerCase().indexOf("joke") > -1) {
       return sayAndShow("Did you hear about the giant with diarrhea? \n It's all over town.");
@@ -168,11 +184,11 @@
     voices.forEach(function(voice) {
       // Create a new option element.
       var option = document.createElement('option');
-      
+
       // Set the options value and text.
       option.value = voice.name;
       option.innerHTML = voice.name;
-        
+
       // Add the option to the voice selector.
       voiceSelect.appendChild(option);
     });
