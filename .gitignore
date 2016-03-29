@@ -1,3 +1,4 @@
 node_modules
 nicam.cert
 nicam.key
+config.js

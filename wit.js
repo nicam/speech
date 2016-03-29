@@ -1,7 +1,9 @@
 var wit = require('node-wit');
 var http = require('http');
-var harmony = require('./harmony');
+var harmonyCommand = require('./harmony-command');
+var harmonyActivity = require('./harmony-activity');
 var power = require('./power');
+var surveillance = require('./surveillance');
 
 const ACCESS_TOKEN = "GRALRNKXTETRK7UA2ZDCT4HWMBYTJSKL";
 
@@ -40,7 +42,14 @@ function switchIntentions(response, socket) {
         power.executeAction(socket, normalizedObj);
         break;
       case 'harmony':
-        harmony.executeAction(socket, normalizedObj);
+        harmonyActivity.executeAction(socket, normalizedObj);
+        break;
+      case 'harmony_command':
+      console.log('command acceessed');
+        harmonyCommand.executeAction(socket, normalizedObj);
+        break;
+      case 'surveillance':
+        surveillance.executeAction(socket, normalizedObj);
         break;
       default:
        socket.emit('response', "I couldn't figure out what to do");

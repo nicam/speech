@@ -1,15 +1,20 @@
 var http = require('http');
-
-const powerhost = '192.168.10.15';
+var responder = require('./responder');
+var config = require('./config');
 
 function executeAction(socket, intent) {
+  var path = buildPath(intent);
+  if (!path) {
+    socket.emit('response', responder.error());
+    return;
+  }
   http.get({
-    hostname: powerhost,
-    port: 8000,
-    path: buildPath(intent),
+    hostname: config.powerIp,
+    port: config.powerPort,
+    path: path,
     agent: false  // create a new agent just for this one request
   }, (res) => {
-    socket.emit('response', "As you wish");
+    socket.emit('response', responder.success());
   }, (err) => {
     socket.emit('response', "the communication with the power module failed");
   });
@@ -40,6 +45,7 @@ function buildPath(intent) {
       group = '11111';
       break;
     default:
+      return false;
   }
   return `/?group=${group}&switch=${slot}&action=${action}`;
 }

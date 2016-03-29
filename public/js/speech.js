@@ -7,6 +7,8 @@
   var isProcessing = false;
   var speeches = [];
   var voiceSelect = document.getElementById('voice');
+  var cameraUrl = 'http://192.168.10.4:8084/video/livesp.asp';
+  // var defaultVoice = 'Google UK English Female';
 
   var init = function () {
     socket = io();
@@ -42,8 +44,9 @@
     });
 
     recognition.addEventListener('result', function(event) {
-      document.getElementById('output').innerHTML = event.results[0][0].transcript;
-      sentence = event.results[0][0].transcript;
+      var text = fixSwissGerman(event.results[0][0].transcript);
+      document.getElementById('output').innerHTML = text;
+      sentence = text;
     });
 
   };
@@ -125,7 +128,7 @@
   var toggleSurveillance = function () {
     var container = document.getElementById("surveillance");
     if (container.classList.contains('hidden')) {
-      document.getElementById('surveilance-iframe').src = 'http://192.168.10.4:8084/video/livesp.asp';
+      document.getElementById('surveilance-iframe').src = cameraUrl;
       document.getElementById("surveillance").classList.remove('hidden');
       return sayAndShow("surveillance activated");
     } else {
@@ -180,6 +183,7 @@
     // Fetch the available voices.
     var voices = speechSynthesis.getVoices();
     voiceSelect = document.getElementById('voice');
+    var index = 0, i = 0;
     // Loop through each of the voices.
     voices.forEach(function(voice) {
       // Create a new option element.
@@ -188,10 +192,15 @@
       // Set the options value and text.
       option.value = voice.name;
       option.innerHTML = voice.name;
+      if (defaultVoice && voice.name === defaultVoice) {
+        index = i;
+      }
 
       // Add the option to the voice selector.
       voiceSelect.appendChild(option);
+      i++;
     });
+    voiceSelect.selectedIndex = index;
   };
 
   var processing = function() {
@@ -207,6 +216,19 @@
   var speaking = function() {
     document.getElementById('loading').className = "loader-speak";
   };
+
+  var fixSwissGerman = function (text) {
+    var replaces = {
+      'Channel app': 'Channel up',
+      'show me my tasks': 'show me my desk',
+      'phone on the desk lights': 'turn on the desk lights',
+      'show me the whole way': 'show me the hallway',
+    }
+    Object.keys(replaces).forEach(key => {
+      text = text.replace(key, replaces[key]);
+    })
+    return text;
+  }
 
   document.addEventListener("DOMContentLoaded", function() {
     if (('webkitSpeechRecognition' in window && 'speechSynthesis' in window)) {

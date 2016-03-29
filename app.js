@@ -35,8 +35,8 @@ io.on('connection', function(socket) {
 
 function handleIncomingRequest (socket) {
   return (string) => {
-    var giphyCheck = /show me (a |an )?.*/i;
-    var witCheck = /(tell|turn|isaac|isac|want|resume|stop|switch)/i;
+    var giphyCheck = /show me (a |an ).*/i;
+    var witCheck = /(show|tell|turn|isaac|isac|want|resume|stop|switch|mute|channel|volume|up|down)/i;
     var giphyRep = /show me (a |an )?/i;
     if (giphyCheck.test(string)) {
       giphy.search({q: string.replace(giphyRep.exec(string)[0], '').trim(),limit: giphyResults}, parseGiphy(socket));

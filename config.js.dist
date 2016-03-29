@@ -1,0 +1,8 @@
+module.exports = {
+  cameraIp: '192.168.10.4',
+  cameraPort: 8084,
+  cameraAuth: 'Basic FOOO',
+  harmonyIp: '192.168.10.102',
+  powerIp: '192.168.10.15',
+  powerPort: 8000
+}
