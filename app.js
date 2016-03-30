@@ -1,7 +1,7 @@
 "use strict";
-
-var wolfram = require('wolfram').createClient("8U7YVL-3364E95GXU");
-var giphy = require('giphy')('dc6zaTOxFJmzC');
+var config = require('./config/config');
+var wolfram = require('wolfram').createClient(config.wolframKey);
+var giphy = require('giphy')(config.giphyKey);
 var fs = require('fs');
 var http = require('http');
 var wit = require('./wit');
@@ -11,14 +11,7 @@ var app = express();
 var giphyResults = 20;
 var protocol;
 
-if (process.env.NODE_ENV === 'local') {
-  var privateKey  = fs.readFileSync('nicam.key', 'utf8');
-  var certificate = fs.readFileSync('nicam.cert', 'utf8');
-  var credentials = {key: privateKey, cert: certificate};
-  protocol = require('https').Server(credentials, app);
-} else {
-  protocol = require('http').Server(app);
-}
+protocol = require('http').Server(app);
 
 var io = require('socket.io')(protocol);
 

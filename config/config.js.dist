@@ -4,5 +4,8 @@ module.exports = {
   cameraAuth: 'Basic FOOO',
   harmonyIp: '192.168.10.102',
   powerIp: '192.168.10.15',
-  powerPort: 8000
+  powerPort: 8000,
+  witKey: '',
+  wolframKey: '',
+  giphyKey: ''
 }

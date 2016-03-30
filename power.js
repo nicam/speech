@@ -1,6 +1,6 @@
 var http = require('http');
 var responder = require('./responder');
-var config = require('./config');
+var config = require('./config/config');
 
 function executeAction(socket, intent) {
   var path = buildPath(intent);

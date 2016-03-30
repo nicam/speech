@@ -1,6 +1,6 @@
 var harmony = require('harmonyhubjs-client');
 var responder = require('./responder');
-var config = require('./config');
+var config = require('./config/config');
 
 function executeAction(socket, intent) {
   harmony(config.harmonyIp).then(function(harmonyClient) {

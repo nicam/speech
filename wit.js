@@ -4,8 +4,9 @@ var harmonyCommand = require('./harmony-command');
 var harmonyActivity = require('./harmony-activity');
 var power = require('./power');
 var surveillance = require('./surveillance');
+var config = require('./config/config');
 
-const ACCESS_TOKEN = "GRALRNKXTETRK7UA2ZDCT4HWMBYTJSKL";
+const ACCESS_TOKEN = config.witKey;
 
 function analyzeWithWith(socket, string) {
   wit.captureTextIntent(ACCESS_TOKEN, string, (err, res) => {
