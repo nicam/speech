@@ -7,7 +7,7 @@
   var isProcessing = false;
   var speeches = [];
   var voiceSelect = document.getElementById('voice');
-  var cameraUrl = 'http://192.168.10.4:8084/video/livesp.asp';
+  var cameraUrl = 'https://cam.nicam.ch/video/livesp.asp';
   // var defaultVoice = 'Google UK English Female';
 
   var init = function () {
